@@ -8,10 +8,6 @@ The Ship Management System uses SQL Server with a normalized relational database
 
 ### Database Schema
 
-#### Entity Relationship Diagram
-
-See [ERD.md](ERD.md) for the complete entity relationship diagram.
-
 #### Main Tables
 
 **1. Ships**
@@ -369,6 +365,7 @@ WHERE NOT EXISTS (SELECT 1 FROM CrewMembers cm WHERE cm.CrewId = cs.CrewId);
 ---
 
 **For more information:**
-- See [ERD.md](ERD.md) for complete database diagram
-- See [API Documentation](API_DOCUMENTATION.md) for API usage
-- See [AZURE_SETUP.md](AZURE_SETUP.md) for Azure-specific setup
+- [README.md](README.md) - Project overview
+- [CONFIGURATION.md](CONFIGURATION.md) - Configuration management
+- [DOCKER.md](DOCKER.md) - Docker deployment guide
+- [TESTING.md](TESTING.md) - Testing guide

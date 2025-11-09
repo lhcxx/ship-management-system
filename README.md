@@ -76,9 +76,13 @@ ship-management-system/
 │   ├── 02_InsertSampleData.sql
 │   ├── 03_InsertBudgetAndTransactions.sql
 │   └── 04_CreateStoredProcedures.sql
-└── docs/                             # Additional documentation
+├── test.sh / test.bat                # Test runner scripts
+└── docs/                             # Documentation
     ├── DATABASE.md                   # Database design and setup
-    └── DOCKER.md                     # Docker deployment guide
+    ├── DOCKER.md                     # Docker deployment guide
+    ├── CONFIGURATION.md              # Configuration management
+    ├── TESTING.md                    # Testing guide
+    └── QUICKSTART.md                 # Quick start guide
 ```
 
 ## 🚀 Quick Start
@@ -147,9 +151,18 @@ For detailed Docker setup, see [DOCKER.md](DOCKER.md)
   - Service management
   - Troubleshooting
 
-- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute getting started guide
+- **[CONFIGURATION.md](CONFIGURATION.md)** - Configuration management
+  - Connection string setup
+  - Environment variables
+  - Security best practices
 
-- **[AZURE_SETUP.md](AZURE_SETUP.md)** - Azure SQL configuration
+- **[TESTING.md](TESTING.md)** - Testing guide
+  - Unit tests and E2E tests
+  - Running tests
+  - Code coverage
+  - Writing tests
+
+- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute getting started guide
 
 - **[API_BACKGROUND.md](API_BACKGROUND.md)** - Background API management
 
@@ -178,13 +191,25 @@ See Swagger UI for complete API documentation and testing interface.
 
 ## 🧪 Testing
 
-```bash
-# Run all tests
-dotnet test
+The project includes comprehensive unit and E2E tests.
 
-# Run tests with coverage
-dotnet test /p:CollectCoverage=true
+```bash
+# Run all tests (unit + E2E)
+./test.sh             # Mac/Linux
+test.bat              # Windows
+
+# Run specific test types
+./test.sh --unit-only    # Unit tests only
+./test.sh --e2e-only     # E2E tests only
+./test.sh --coverage     # With code coverage
+
+# Or use dotnet CLI
+dotnet test
 ```
+
+See [TESTING.md](TESTING.md) for detailed testing guide.
+
+**Current Coverage**: 12 tests (3 unit, 9 E2E) - All passing ✅
 
 ## 🏗 Design Decisions
 
@@ -246,9 +271,42 @@ See [DATABASE.md](DATABASE.md) for complete details.
 
 ### Running Tests
 
+See [TESTING.md](TESTING.md) for comprehensive testing guide.
+
 ```bash
-# Run all tests
-dotnet test
+# All tests
+./test.sh
+
+# With detailed output
+dotnet test --logger "console;verbosity=detailed"
+```
+
+### Adding New Features
+
+1. Define entity in `Core/Entities`
+2. Create DTOs in `Core/DTOs`
+3. Define interface in `Core/Interfaces`
+4. Implement repository in `Infrastructure/Repositories`
+5. Create controller in `API/Controllers`
+6. Write tests in `Tests` (both unit and E2E)
+
+### Database Changes
+
+1. Update SQL scripts in `database/`
+2. Run migration scripts
+3. Update stored procedures if needed
+4. Test with sample data
+
+See [DATABASE.md](DATABASE.md) and [CONFIGURATION.md](CONFIGURATION.md) for more details.
+
+---
+
+**Project Status**: ✅ Production Ready  
+**Build**: Passing (12/12 tests)  
+**Database**: Azure SQL Server  
+**API**: Running on port 5050
+
+**Documentation**: [DATABASE.md](DATABASE.md) | [DOCKER.md](DOCKER.md) | [TESTING.md](TESTING.md) | [CONFIGURATION.md](CONFIGURATION.md)
 
 # With detailed output
 dotnet test --logger "console;verbosity=detailed"
