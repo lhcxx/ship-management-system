@@ -108,24 +108,6 @@ Visit directly: **http://localhost:5050**
 
 This will open Swagger UI where you can interactively test all API endpoints.
 
-### Using Python
-```python
-import requests
-
-# Get ship list
-response = requests.get('http://localhost:5050/api/ships')
-ships = response.json()
-print(f"Total ships: {len(ships)}")
-
-# Get crew list
-response = requests.get('http://localhost:5050/api/crew', params={
-    'shipCode': 'SHIP01',
-    'pageSize': 10
-})
-crew_data = response.json()
-print(f"Total crew: {crew_data['totalRecords']}")
-```
-
 ## Sample Test Results
 
 ### ✅ Test 1: Get All Ships
@@ -187,22 +169,4 @@ Verify the connection string in `appsettings.json` is correct:
   }
 }
 ```
-
-## Production Deployment
-
-For production environments, it's recommended to use:
-- **systemd** (Linux)
-- **launchd** (macOS)
-- **Docker** (Recommended)
-
-### Using Docker Compose
-```bash
-docker-compose up -d
-```
-
-This starts both the API and SQL Server in the background.
-
----
-
-**The API is currently running and ready to use!** 🚀
 

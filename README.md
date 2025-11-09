@@ -64,25 +64,45 @@ This Ship Management System implements a complete backend solution for maritime 
 ```
 ship-management-system/
 ├── src/
-│   ├── ShipManagement.API/          # Web API Layer
-│   ├── ShipManagement.Core/         # Domain Layer
-│   └── ShipManagement.Infrastructure/ # Data Access Layer
+│   ├── ShipManagement.API/              # Web API Layer
+│   │   ├── Controllers/                 # API Controllers
+│   │   ├── appsettings.json             # API configuration
+│   │   └── Program.cs                   # Application entry point
+│   ├── ShipManagement.Core/             # Domain Layer
+│   │   ├── Entities/                    # Domain entities
+│   │   ├── DTOs/                        # Data Transfer Objects
+│   │   └── Interfaces/                  # Repository interfaces
+│   └── ShipManagement.Infrastructure/   # Data Access Layer
+│       ├── Repositories/                # Repository implementations
+│       └── appsettings.json             # Infrastructure configuration
 ├── tests/
-│   └── ShipManagement.Tests/        # Unit tests
-├── database/                         # Database scripts
-│   ├── init-db.sh                   # Database initialization (Mac/Linux)
-│   ├── init-db.bat                  # Database initialization (Windows)
-│   ├── 01_CreateTables.sql
-│   ├── 02_InsertSampleData.sql
-│   ├── 03_InsertBudgetAndTransactions.sql
-│   └── 04_CreateStoredProcedures.sql
-├── test.sh / test.bat                # Test runner scripts
-└── docs/                             # Documentation
-    ├── DATABASE.md                   # Database design and setup
-    ├── DOCKER.md                     # Docker deployment guide
-    ├── CONFIGURATION.md              # Configuration management
-    ├── TESTING.md                    # Testing guide
-    └── QUICKSTART.md                 # Quick start guide
+│   └── ShipManagement.Tests/            # Test projects
+│       ├── E2ETests/                    # End-to-end tests (9 tests)
+│       ├── Entities/                    # Unit tests (3 tests)
+│       └── DTOs/                        # Test DTOs
+├── database/                             # Database scripts & tools
+│   ├── init-db.sh                       # Database initialization (Mac/Linux)
+│   ├── init-db.bat                      # Database initialization (Windows)
+│   ├── 00_CleanupData.sql               # Data cleanup script
+│   ├── 01_CreateTables.sql              # Table creation (9 tables)
+│   ├── 02_InsertSampleData.sql          # Sample data (ships, crew, users)
+│   ├── 03_InsertBudgetAndTransactions.sql # Financial data
+│   ├── 04_CreateStoredProcedures.sql    # Stored procedures (10 SPs)
+│   ├── DatabaseInitializer/             # Database initialization tool
+│   ├── ConnectionTester/                # Connection testing tool
+│   └── QuickTest/                       # Quick database query tool
+├── doc/                                  # Documentation
+│   ├── ERD.md                           # Entity Relationship Diagram
+│   ├── DATABASE.md                      # Database design and setup
+│   ├── DOCKER.md                        # Docker deployment guide
+│   ├── TESTING.md                       # Testing guide
+│   ├── QUICKSTART.md                    # Quick start guide
+│   └── API_BACKGROUND.md                # Background API management
+├── test.sh / test.bat                    # Test runner scripts
+├── docker-compose.yml                    # Docker Compose configuration
+├── Dockerfile                            # Docker image definition
+├── .env.example                          # Environment variables template
+└── ShipManagement.sln                    # Solution file
 ```
 
 ## 🚀 Quick Start
@@ -101,16 +121,14 @@ ship-management-system/
    cd ship-management-system
    ```
 
-2. **Initialize database** (one command!)
+2. **Initialize database** 
    ```bash
    # Mac/Linux
    cd database
-   export DB_PASSWORD="your-password"
    ./init-db.sh
    
    # Windows
    cd database
-   set DB_PASSWORD=your-password
    init-db.bat
    ```
 
@@ -134,37 +152,33 @@ docker compose up --build
 
 Access API at http://localhost:5000
 
-For detailed Docker setup, see [DOCKER.md](DOCKER.md)
+For detailed Docker setup, see [doc/DOCKER.md](doc/DOCKER.md)
 
 ## 📚 Documentation
 
-- **[DATABASE.md](DATABASE.md)** - Complete database documentation
+- **[doc/ERD.md](doc/ERD.md)** - Entity Relationship Diagram
+  - Database schema visualization
+  - Table relationships
+  - Entity descriptions
+
+- **[doc/DATABASE.md](doc/DATABASE.md)** - Complete database documentation
   - Database architecture and schema
   - Stored procedures and functions
   - Initialization guides
-  - Sample data overview
-  - Maintenance procedures
 
-- **[DOCKER.md](DOCKER.md)** - Docker deployment guide
+- **[doc/DOCKER.md](doc/DOCKER.md)** - Docker deployment guide
   - Docker setup and installation
   - Container configuration
   - Service management
-  - Troubleshooting
 
-- **[CONFIGURATION.md](CONFIGURATION.md)** - Configuration management
-  - Connection string setup
-  - Environment variables
-  - Security best practices
-
-- **[TESTING.md](TESTING.md)** - Testing guide
+- **[doc/TESTING.md](doc/TESTING.md)** - Testing guide
   - Unit tests and E2E tests
   - Running tests
   - Code coverage
-  - Writing tests
 
-- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute getting started guide
+- **[doc/QUICKSTART.md](doc/QUICKSTART.md)**
 
-- **[API_BACKGROUND.md](API_BACKGROUND.md)** - Background API management
+- **[doc/API_BACKGROUND.md](doc/API_BACKGROUND.md)** - Background API management
 
 ## 📖 API Documentation
 
@@ -199,17 +213,35 @@ The project includes comprehensive unit and E2E tests.
 test.bat              # Windows
 
 # Run specific test types
-./test.sh --unit-only    # Unit tests only
-./test.sh --e2e-only     # E2E tests only
+./test.sh --unit-only    # Unit tests only (3 tests)
+./test.sh --e2e-only     # E2E tests only (9 tests)
 ./test.sh --coverage     # With code coverage
 
 # Or use dotnet CLI
 dotnet test
 ```
 
-See [TESTING.md](TESTING.md) for detailed testing guide.
+### Test Coverage
 
-**Current Coverage**: 12 tests (3 unit, 9 E2E) - All passing ✅
+**Total: 12 tests - All passing ✅**
+
+**Unit Tests (3)**
+- Ship entity validation
+- Crew member entity validation  
+- Financial calculation logic
+
+**E2E Tests (9)**
+- ✅ GetAllShips - Retrieve all ships from API
+- ✅ GetActiveShips - Filter active ships only
+- ✅ GetCrewList_WithPagination - Paginated crew list
+- ✅ GetCrewList_WithSearch - Search crew by name
+- ✅ GetCrewList_WithSorting - Sort crew by different columns
+- ✅ GetFinancialSummaryReport - Summary financial report
+- ✅ GetFinancialDetailReport - Detailed financial report
+- ✅ GetCrewList_InvalidShipCode - Error handling for invalid ship
+- ✅ GetFinancialReport_InvalidPeriod - Error handling for invalid period
+
+See [doc/TESTING.md](doc/TESTING.md) for detailed testing guide.
 
 ## 🏗 Design Decisions
 
@@ -257,7 +289,7 @@ The database includes comprehensive sample data:
 - 68 chart of accounts with hierarchy
 - 2 years of budget and transaction data (2024-2025)
 
-See [DATABASE.md](DATABASE.md) for complete details.
+See [doc/DATABASE.md](doc/DATABASE.md) for complete details.
 
 ## 🔐 Security & Best Practices
 
@@ -271,7 +303,7 @@ See [DATABASE.md](DATABASE.md) for complete details.
 
 ### Running Tests
 
-See [TESTING.md](TESTING.md) for comprehensive testing guide.
+See [doc/TESTING.md](doc/TESTING.md) for comprehensive testing guide.
 
 ```bash
 # All tests
@@ -297,7 +329,7 @@ dotnet test --logger "console;verbosity=detailed"
 3. Update stored procedures if needed
 4. Test with sample data
 
-See [DATABASE.md](DATABASE.md) and [CONFIGURATION.md](CONFIGURATION.md) for more details.
+See [doc/DATABASE.md](doc/DATABASE.md) for more details.
 
 ---
 
@@ -306,9 +338,10 @@ See [DATABASE.md](DATABASE.md) and [CONFIGURATION.md](CONFIGURATION.md) for more
 **Database**: Azure SQL Server  
 **API**: Running on port 5050
 
-**Documentation**: [DATABASE.md](DATABASE.md) | [DOCKER.md](DOCKER.md) | [TESTING.md](TESTING.md) | [CONFIGURATION.md](CONFIGURATION.md)
+**Documentation**: [ERD.md](doc/ERD.md) | [DATABASE.md](doc/DATABASE.md) | [DOCKER.md](doc/DOCKER.md) | [TESTING.md](doc/TESTING.md) | [QUICKSTART.md](doc/QUICKSTART.md)
 
 # With detailed output
+```
 dotnet test --logger "console;verbosity=detailed"
 ```
 

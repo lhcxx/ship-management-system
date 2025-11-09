@@ -13,26 +13,63 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Configuration - Can be overridden with environment variables
-DB_SERVER="${DB_SERVER:-sqlshipmasys.database.windows.net}"
-DB_NAME="${DB_NAME:-ship}"
-DB_USER="${DB_USER:-ship}"
-DB_PASSWORD="${DB_PASSWORD}"
-
 # Script directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# Function to parse connection string from appsettings.json
+parse_appsettings() {
+    local appsettings_file="$SCRIPT_DIR/DatabaseInitializer/appsettings.json"
+    
+    if [ -f "$appsettings_file" ]; then
+        echo -e "${BLUE}Reading configuration from appsettings.json...${NC}"
+        
+        # Extract connection string using grep and sed
+        local conn_str=$(grep -o '"DefaultConnection"[[:space:]]*:[[:space:]]*"[^"]*"' "$appsettings_file" | sed 's/.*"DefaultConnection"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+        
+        if [ -n "$conn_str" ]; then
+            # Parse Server
+            DB_SERVER=$(echo "$conn_str" | grep -o 'Server=[^;]*' | cut -d'=' -f2 | sed 's/tcp://;s/,1433//')
+            # Parse Database/Initial Catalog
+            DB_NAME=$(echo "$conn_str" | grep -o -E '(Database|Initial Catalog)=[^;]*' | cut -d'=' -f2)
+            # Parse User ID
+            DB_USER=$(echo "$conn_str" | grep -o 'User ID=[^;]*' | cut -d'=' -f2)
+            # Parse Password
+            DB_PASSWORD=$(echo "$conn_str" | grep -o 'Password=[^;]*' | cut -d'=' -f2)
+            
+            return 0
+        fi
+    fi
+    return 1
+}
+
+# Try to read from appsettings.json first
+if parse_appsettings; then
+    echo -e "${GREEN}✅ Configuration loaded from appsettings.json${NC}"
+else
+    # Fallback to environment variables or defaults
+    echo -e "${YELLOW}⚠ appsettings.json not found, using environment variables or defaults${NC}"
+    DB_SERVER="${DB_SERVER:-sqlshipmasys.database.windows.net}"
+    DB_NAME="${DB_NAME:-ship}"
+    DB_USER="${DB_USER:-ship}"
+    DB_PASSWORD="${DB_PASSWORD}"
+fi
+
 # Print banner
+echo ""
 echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║   Ship Management System - Database Initialization    ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-# Check if password is provided
+# Check if password is available
 if [ -z "$DB_PASSWORD" ]; then
-    echo -e "${YELLOW}Please enter database password for user '$DB_USER':${NC}"
-    read -s DB_PASSWORD
+    echo -e "${RED}❌ Error: Database password not found${NC}"
     echo ""
+    echo "Please either:"
+    echo "  1. Update password in: database/DatabaseInitializer/appsettings.json"
+    echo "  2. Set environment variable: export DB_PASSWORD=yourpassword"
+    echo ""
+    exit 1
 fi
 
 # Check if sqlcmd is installed
@@ -110,15 +147,12 @@ fi
 
 # Start initialization
 echo -e "${YELLOW}Starting database initialization...${NC}"
+echo -e "${YELLOW}⚠ This will delete all existing data and reinitialize the database${NC}"
 echo ""
 
-# Step 1: Cleanup existing data (optional)
+# Step 1: Cleanup existing data (always execute)
 if [ -f "$SCRIPT_DIR/00_CleanupData.sql" ]; then
-    read -p "Do you want to cleanup existing data? (y/N): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        execute_sql_file "$SCRIPT_DIR/00_CleanupData.sql" "Cleaning up existing data"
-    fi
+    execute_sql_file "$SCRIPT_DIR/00_CleanupData.sql" "Cleaning up existing data"
 fi
 
 # Step 2: Create tables
@@ -173,11 +207,4 @@ echo -e "${BLUE}Next steps:${NC}"
 echo "  1. Start the API: cd ../src/ShipManagement.API && dotnet run"
 echo "  2. Open Swagger UI: http://localhost:5050"
 echo "  3. Test endpoints with sample data"
-echo ""
-echo -e "${YELLOW}Configuration:${NC}"
-echo "  - Database tools use appsettings.json"
-echo "  - Set environment variables to override:"
-echo "    export DB_SERVER=yourserver.database.windows.net"
-echo "    export DB_USER=yourusername"
-echo "    export DB_PASSWORD=yourpassword"
 echo ""

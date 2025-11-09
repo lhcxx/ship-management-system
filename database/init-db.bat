@@ -5,14 +5,57 @@ REM Supports Windows Command Prompt and PowerShell
 
 setlocal enabledelayedexpansion
 
-REM Configuration - Can be overridden with environment variables
-if "%DB_SERVER%"=="" set DB_SERVER=sqlshipmasys.database.windows.net
-if "%DB_NAME%"=="" set DB_NAME=ship
-if "%DB_USER%"=="" set DB_USER=ship
-
 REM Get script directory
 set "SCRIPT_DIR=%~dp0"
 set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
+
+REM Try to read configuration from appsettings.json
+set APPSETTINGS_FILE=%SCRIPT_DIR%\DatabaseInitializer\appsettings.json
+
+if exist "%APPSETTINGS_FILE%" (
+    echo Reading configuration from appsettings.json...
+    
+    REM Parse connection string from JSON using PowerShell
+    for /f "usebackq delims=" %%i in (`powershell -Command "(Get-Content '%APPSETTINGS_FILE%' | ConvertFrom-Json).ConnectionStrings.DefaultConnection"`) do set CONN_STR=%%i
+    
+    if not "!CONN_STR!"=="" (
+        REM Parse Server
+        for /f "tokens=2 delims==" %%a in ('echo !CONN_STR! ^| findstr /i "Server="') do (
+            for /f "tokens=1 delims=;" %%b in ("%%a") do (
+                set DB_SERVER=%%b
+                set DB_SERVER=!DB_SERVER:tcp:=!
+                set DB_SERVER=!DB_SERVER:,1433=!
+            )
+        )
+        
+        REM Parse Database/Initial Catalog
+        for /f "tokens=2 delims==" %%a in ('echo !CONN_STR! ^| findstr /i "Initial Catalog="') do (
+            for /f "tokens=1 delims=;" %%b in ("%%a") do set DB_NAME=%%b
+        )
+        if "!DB_NAME!"=="" (
+            for /f "tokens=2 delims==" %%a in ('echo !CONN_STR! ^| findstr /i "Database="') do (
+                for /f "tokens=1 delims=;" %%b in ("%%a") do set DB_NAME=%%b
+            )
+        )
+        
+        REM Parse User ID
+        for /f "tokens=2 delims==" %%a in ('echo !CONN_STR! ^| findstr /i "User ID="') do (
+            for /f "tokens=1 delims=;" %%b in ("%%a") do set DB_USER=%%b
+        )
+        
+        REM Parse Password
+        for /f "tokens=2 delims==" %%a in ('echo !CONN_STR! ^| findstr /i "Password="') do (
+            for /f "tokens=1 delims=;" %%b in ("%%a") do set DB_PASSWORD=%%b
+        )
+        
+        echo [OK] Configuration loaded from appsettings.json
+    )
+) else (
+    echo [WARNING] appsettings.json not found, using environment variables or defaults
+    if "%DB_SERVER%"=="" set DB_SERVER=sqlshipmasys.database.windows.net
+    if "%DB_NAME%"=="" set DB_NAME=ship
+    if "%DB_USER%"=="" set DB_USER=ship
+)
 
 REM Print banner
 echo.
@@ -21,9 +64,15 @@ echo ║   Ship Management System - Database Initialization    ║
 echo ╚════════════════════════════════════════════════════════╝
 echo.
 
-REM Check if password is provided
+REM Check if password is available
 if "%DB_PASSWORD%"=="" (
-    set /p DB_PASSWORD="Please enter database password for user '%DB_USER%': "
+    echo [ERROR] Database password not found
+    echo.
+    echo Please either:
+    echo   1. Update password in: database\DatabaseInitializer\appsettings.json
+    echo   2. Set environment variable: set DB_PASSWORD=yourpassword
+    echo.
+    exit /b 1
 )
 
 REM Check if sqlcmd is installed
@@ -78,20 +127,18 @@ echo.
 
 REM Start initialization
 echo Starting database initialization...
+echo [WARNING] This will delete all existing data and reinitialize the database
 echo.
 
-REM Step 1: Cleanup (optional)
+REM Step 1: Cleanup (always execute)
 if exist "%SCRIPT_DIR%\00_CleanupData.sql" (
-    set /p CLEANUP="Do you want to cleanup existing data? (y/N): "
-    if /i "!CLEANUP!"=="y" (
-        echo [*] Cleaning up existing data...
-        sqlcmd -S "%DB_SERVER%" -d "%DB_NAME%" -U "%DB_USER%" -P "%DB_PASSWORD%" %SQLCMD_OPTS% -i "%SCRIPT_DIR%\00_CleanupData.sql" -b >nul 2>&1
-        if !ERRORLEVEL! NEQ 0 (
-            echo [ERROR] Failed to cleanup existing data
-            exit /b 1
-        )
-        echo [OK] Cleanup completed
+    echo [*] Cleaning up existing data...
+    sqlcmd -S "%DB_SERVER%" -d "%DB_NAME%" -U "%DB_USER%" -P "%DB_PASSWORD%" %SQLCMD_OPTS% -i "%SCRIPT_DIR%\00_CleanupData.sql" -b >nul 2>&1
+    if !ERRORLEVEL! NEQ 0 (
+        echo [ERROR] Failed to cleanup existing data
+        exit /b 1
     )
+    echo [OK] Cleanup completed
 )
 
 REM Step 2: Create tables
@@ -153,13 +200,6 @@ echo Next steps:
 echo   1. Start the API: cd ..\src\ShipManagement.API ^&^& dotnet run
 echo   2. Open Swagger UI: http://localhost:5050
 echo   3. Test endpoints with sample data
-echo.
-echo Configuration:
-echo   - Database tools use appsettings.json
-echo   - Set environment variables to override:
-echo     set DB_SERVER=yourserver.database.windows.net
-echo     set DB_USER=yourusername
-echo     set DB_PASSWORD=yourpassword
 echo.
 
 endlocal
