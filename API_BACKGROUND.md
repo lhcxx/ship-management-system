@@ -1,97 +1,97 @@
-# API 后台运行指南
+# API Background Running Guide
 
-## 当前状态
+## Current Status
 
-✅ **API 正在后台运行**
-- 监听端口：**5050**
-- 访问地址：http://localhost:5050
-- 日志文件：`/tmp/shipapi.log`
-- 进程 ID：可通过 `ps aux | grep dotnet` 查看
+✅ **API is running in the background**
+- Listening on port: **5050**
+- Access URL: http://localhost:5050
+- Log file: `/tmp/shipapi.log`
+- Process ID: Check with `ps aux | grep dotnet`
 
-## 启动 API（后台运行）
+## Starting the API (Background Mode)
 
 ```bash
 cd /Users/ricky/source/ship-management-system/src/ShipManagement.API
 
-# 在后台启动 API
+# Start API in background
 nohup dotnet run --urls "http://localhost:5050" > /tmp/shipapi.log 2>&1 &
 
-# 查看启动状态
+# View startup status
 tail -f /tmp/shipapi.log
 ```
 
-## 管理 API 进程
+## Managing the API Process
 
-### 查看运行状态
+### Check Running Status
 ```bash
-# 检查端口是否在监听
+# Check if port is listening
 lsof -i :5050
 
-# 查看进程
+# View process
 ps aux | grep "dotnet.*ShipManagement"
 ```
 
-### 查看日志
+### View Logs
 ```bash
-# 实时查看日志
+# Real-time log viewing
 tail -f /tmp/shipapi.log
 
-# 查看最后20行
+# View last 20 lines
 tail -20 /tmp/shipapi.log
 ```
 
-### 停止 API
+### Stop API
 ```bash
-# 方法1：通过进程名
+# Method 1: By process name
 pkill -f "dotnet.*ShipManagement"
 
-# 方法2：通过进程ID（先用 ps aux 查找PID）
+# Method 2: By process ID (find PID with ps aux first)
 kill <PID>
 
-# 方法3：强制停止
+# Method 3: Force stop
 killall -9 dotnet
 ```
 
-### 重启 API
+### Restart API
 ```bash
-# 停止旧进程
+# Stop old process
 pkill -f "dotnet.*ShipManagement"
 
-# 等待2秒
+# Wait 2 seconds
 sleep 2
 
-# 重新启动
+# Restart
 cd /Users/ricky/source/ship-management-system/src/ShipManagement.API
 nohup dotnet run --urls "http://localhost:5050" > /tmp/shipapi.log 2>&1 &
 ```
 
-## 测试 API
+## Testing the API
 
-### 使用 curl
+### Using curl
 
 ```bash
-# 1. 获取所有船舶
+# 1. Get all ships
 curl http://localhost:5050/api/ships
 
-# 2. 获取活跃船舶
+# 2. Get active ships
 curl http://localhost:5050/api/ships/active
 
-# 3. 获取船员列表（分页）
+# 3. Get crew list (paginated)
 curl "http://localhost:5050/api/crew?shipCode=SHIP01&pageNumber=1&pageSize=10"
 
-# 4. 搜索船员
+# 4. Search crew
 curl "http://localhost:5050/api/crew?shipCode=SHIP01&searchTerm=John&pageSize=10"
 
-# 5. 获取财务报表详情
+# 5. Get financial report details
 curl "http://localhost:5050/api/financial/report/detail?shipCode=SHIP01&period=2025-01"
 
-# 6. 获取财务报表汇总
+# 6. Get financial report summary
 curl "http://localhost:5050/api/financial/report/summary?shipCode=SHIP01&period=2025-01"
 
-# 7. 获取所有用户
+# 7. Get all users
 curl http://localhost:5050/api/users
 
-# 8. 创建新船舶
+# 8. Create new ship
 curl -X POST http://localhost:5050/api/ships \
   -H "Content-Type: application/json" \
   -d '{
@@ -102,35 +102,35 @@ curl -X POST http://localhost:5050/api/ships \
   }'
 ```
 
-### 使用浏览器
+### Using Browser
 
-直接访问：**http://localhost:5050**
+Visit directly: **http://localhost:5050**
 
-这会打开 Swagger UI，可以交互式测试所有 API 端点。
+This will open Swagger UI where you can interactively test all API endpoints.
 
-### 使用 Python
+### Using Python
 ```python
 import requests
 
-# 获取船舶列表
+# Get ship list
 response = requests.get('http://localhost:5050/api/ships')
 ships = response.json()
-print(f"共 {len(ships)} 艘船")
+print(f"Total ships: {len(ships)}")
 
-# 获取船员列表
+# Get crew list
 response = requests.get('http://localhost:5050/api/crew', params={
     'shipCode': 'SHIP01',
     'pageSize': 10
 })
 crew_data = response.json()
-print(f"船员总数: {crew_data['totalRecords']}")
+print(f"Total crew: {crew_data['totalRecords']}")
 ```
 
-## 测试结果示例
+## Sample Test Results
 
-### ✅ 测试1: 获取所有船舶
+### ✅ Test 1: Get All Ships
 ```
-共 5 艘船
+Total 5 ships:
   - SHIP03: Black Pearl (Active)
   - SHIP01: Flying Dutchman (Active)
   - SHIP05: HMS Endeavour (Inactive)
@@ -138,10 +138,10 @@ print(f"船员总数: {crew_data['totalRecords']}")
   - SHIP02: Thousand Sunny (Active)
 ```
 
-### ✅ 测试2: 获取船员列表（分页）
+### ✅ Test 2: Get Crew List (Paginated)
 ```
-总记录数: 20, 当前页: 1/4
-船员列表:
+Total records: 20, Current page: 1/4
+Crew list:
   1. Soka Philip - Master (Relief Due)
   2. John Masterbear - Chief Officer (Relief Due)
   3. Michael Chen - Second Officer (Relief Due)
@@ -149,7 +149,7 @@ print(f"船员总数: {crew_data['totalRecords']}")
   5. Masteros Philip - Chief Engineer (Relief Due)
 ```
 
-### ✅ 测试3: 财务报表详情
+### ✅ Test 3: Financial Report Details
 ```json
 [
   {
@@ -165,21 +165,21 @@ print(f"船员总数: {crew_data['totalRecords']}")
 ]
 ```
 
-## 常见问题
+## Common Issues
 
-### 端口被占用
-如果端口5050被占用，可以使用其他端口：
+### Port Already in Use
+If port 5050 is occupied, use a different port:
 ```bash
 dotnet run --urls "http://localhost:5051"
 ```
 
-### API 无响应
-1. 检查进程是否运行：`ps aux | grep dotnet`
-2. 查看日志：`tail -50 /tmp/shipapi.log`
-3. 检查防火墙设置
+### API Not Responding
+1. Check if process is running: `ps aux | grep dotnet`
+2. View logs: `tail -50 /tmp/shipapi.log`
+3. Check firewall settings
 
-### 数据库连接错误
-检查 `appsettings.json` 中的连接字符串是否正确：
+### Database Connection Error
+Verify the connection string in `appsettings.json` is correct:
 ```json
 {
   "ConnectionStrings": {
@@ -188,20 +188,21 @@ dotnet run --urls "http://localhost:5051"
 }
 ```
 
-## 生产环境部署
+## Production Deployment
 
-对于生产环境，建议使用：
+For production environments, it's recommended to use:
 - **systemd** (Linux)
 - **launchd** (macOS)
-- **Docker** (推荐)
+- **Docker** (Recommended)
 
-### 使用 Docker Compose
+### Using Docker Compose
 ```bash
 docker-compose up -d
 ```
 
-这会在后台启动 API 和 SQL Server。
+This starts both the API and SQL Server in the background.
 
 ---
 
-**当前 API 正在运行，可以直接使用！** 🚀
+**The API is currently running and ready to use!** 🚀
+

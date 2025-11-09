@@ -7,11 +7,9 @@ A comprehensive backend solution for managing ships, crew, and financial reporti
 - [Overview](#overview)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Database Setup](#database-setup)
+- [Quick Start](#quick-start)
+- [Documentation](#documentation)
 - [API Documentation](#api-documentation)
-- [Docker Deployment](#docker-deployment)
 - [Testing](#testing)
 - [Design Decisions](#design-decisions)
 
@@ -67,174 +65,116 @@ This Ship Management System implements a complete backend solution for maritime 
 ship-management-system/
 ├── src/
 │   ├── ShipManagement.API/          # Web API Layer
-│   │   ├── Controllers/             # API Controllers
-│   │   ├── Program.cs               # Application entry point
-│   │   └── appsettings.json         # Configuration
 │   ├── ShipManagement.Core/         # Domain Layer
-│   │   ├── Entities/                # Domain entities
-│   │   ├── DTOs/                    # Data Transfer Objects
-│   │   └── Interfaces/              # Repository interfaces
 │   └── ShipManagement.Infrastructure/ # Data Access Layer
-│       ├── Data/                    # Database context
-│       └── Repositories/            # Repository implementations
 ├── tests/
 │   └── ShipManagement.Tests/        # Unit tests
-├── database/
-│   ├── 01_CreateTables.sql          # DDL scripts
-│   ├── 02_InsertSampleData.sql      # Sample data
-│   ├── 03_InsertBudgetAndTransactions.sql # Financial data
-│   └── 04_CreateStoredProcedures.sql # Stored procedures
-├── Dockerfile                        # Docker configuration
-├── docker-compose.yml               # Docker Compose setup
-└── README.md                        # This file
+├── database/                         # Database scripts
+│   ├── init-db.sh                   # Database initialization (Mac/Linux)
+│   ├── init-db.bat                  # Database initialization (Windows)
+│   ├── 01_CreateTables.sql
+│   ├── 02_InsertSampleData.sql
+│   ├── 03_InsertBudgetAndTransactions.sql
+│   └── 04_CreateStoredProcedures.sql
+└── docs/                             # Additional documentation
+    ├── DATABASE.md                   # Database design and setup
+    └── DOCKER.md                     # Docker deployment guide
 ```
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
 
 - .NET 9 SDK
-- SQL Server 2022 or later (or SQL Server Express)
-- Docker & Docker Compose (optional, for containerized deployment)
+- SQL Server (Local, Azure, or Docker)
+- Docker (optional, for containerized deployment)
 
-### Option 1: Running Locally
+### Option 1: Quick Setup with Azure SQL (Recommended)
 
-1. **Clone the repository**
+1. **Clone and navigate**
    ```bash
    git clone <repository-url>
    cd ship-management-system
    ```
 
-2. **Update connection string**
+2. **Initialize database** (one command!)
+   ```bash
+   # Mac/Linux
+   cd database
+   export DB_PASSWORD="your-password"
+   ./init-db.sh
    
-   Edit `src/ShipManagement.API/appsettings.json`:
-   ```json
-   {
-     "ConnectionStrings": {
-       "DefaultConnection": "Server=localhost,1433;Database=ShipManagementDB;User Id=sa;Password=YourPassword;TrustServerCertificate=True"
-     }
-   }
+   # Windows
+   cd database
+   set DB_PASSWORD=your-password
+   init-db.bat
    ```
 
-3. **Setup database** (see [Database Setup](#database-setup))
+3. **Update API connection string**
+   
+   Edit `src/ShipManagement.API/appsettings.json` with your database details
 
-4. **Run the application**
+4. **Run the API**
    ```bash
    cd src/ShipManagement.API
    dotnet run
    ```
 
-5. **Access Swagger UI**
-   
-   Navigate to `https://localhost:5001` (or the port shown in console)
+5. **Open Swagger UI**: http://localhost:5050
 
-### Option 2: Running with Docker
+### Option 2: Docker Deployment
 
 ```bash
-# Build and start all services
-docker-compose up --build
-
-# Access the API
-# http://localhost:5000
+docker compose up --build
 ```
 
-## 💾 Database Setup
+Access API at http://localhost:5000
 
-### Manual Setup
+For detailed Docker setup, see [DOCKER.md](DOCKER.md)
 
-1. **Create the database** (if not using Docker)
-   ```sql
-   CREATE DATABASE ShipManagementDB;
-   GO
-   USE ShipManagementDB;
-   GO
-   ```
+## 📚 Documentation
 
-2. **Run the SQL scripts in order**:
-   ```bash
-   # From the database directory
-   sqlcmd -S localhost -U sa -P YourPassword -i 01_CreateTables.sql
-   sqlcmd -S localhost -U sa -P YourPassword -i 02_InsertSampleData.sql
-   sqlcmd -S localhost -U sa -P YourPassword -i 03_InsertBudgetAndTransactions.sql
-   sqlcmd -S localhost -U sa -P YourPassword -i 04_CreateStoredProcedures.sql
-   ```
+- **[DATABASE.md](DATABASE.md)** - Complete database documentation
+  - Database architecture and schema
+  - Stored procedures and functions
+  - Initialization guides
+  - Sample data overview
+  - Maintenance procedures
 
-### Database Schema
+- **[DOCKER.md](DOCKER.md)** - Docker deployment guide
+  - Docker setup and installation
+  - Container configuration
+  - Service management
+  - Troubleshooting
 
-**Main Tables:**
-- `Ships` - Ship master data
-- `Users` - System users
-- `UserShipAssignments` - User-ship relationships
-- `CrewMembers` - Crew personal data
-- `CrewRanks` - Rank definitions
-- `CrewServiceHistory` - Crew assignments and contracts
-- `ChartOfAccounts` - Financial account hierarchy
-- `BudgetData` - Budget information
-- `AccountTransactions` - Actual transactions
+- **[QUICKSTART.md](QUICKSTART.md)** - 5-minute getting started guide
 
-**Stored Procedures:**
-- `usp_GetCrewList` - Retrieves crew with pagination, sorting, and search
-- `usp_GetFinancialReportDetail` - Detailed financial report
-- `usp_GetFinancialReportSummary` - Summary financial report
+- **[AZURE_SETUP.md](AZURE_SETUP.md)** - Azure SQL configuration
+
+- **[API_BACKGROUND.md](API_BACKGROUND.md)** - Background API management
 
 ## 📖 API Documentation
 
-Once the application is running, access the Swagger UI for interactive API documentation:
-- Local: `https://localhost:5001`
-- Docker: `http://localhost:5000`
+Access Swagger UI when the API is running:
+- Local: http://localhost:5050
+- Docker: http://localhost:5000
 
-### Main Endpoints
+### Key Endpoints
 
-#### Ships
-- `GET /api/ships` - Get all ships
-- `GET /api/ships/active` - Get active ships only
-- `GET /api/ships/{shipCode}` - Get ship by code
-- `POST /api/ships` - Create new ship
-- `PUT /api/ships/{shipCode}` - Update ship
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/ships` | GET | Get all ships |
+| `/api/ships/{shipCode}` | GET | Get ship details |
+| `/api/users` | GET | Get all users |
+| `/api/crew` | GET | Get crew list (with pagination, sorting, search) |
+| `/api/financial/report/summary` | GET | Financial summary report |
+| `/api/financial/report/detail` | GET | Detailed financial report |
 
-#### Users
-- `GET /api/users` - Get all users
-- `GET /api/users/{userId}` - Get user by ID
-- `POST /api/users` - Create new user
-- `GET /api/users/{userId}/ships` - Get user's assigned ships
-- `POST /api/users/{userId}/ships` - Assign ship to user
-- `DELETE /api/users/{userId}/ships/{shipCode}` - Remove ship from user
+**Query Parameters:**
+- Crew: `shipCode`, `pageNumber`, `pageSize`, `sortColumn`, `sortDirection`, `searchTerm`, `asOfDate`
+- Financial: `shipCode`, `period` (YYYY-MM)
 
-#### Crew
-- `GET /api/crew` - Get crew list with pagination and filtering
-  - Query parameters: `shipCode`, `pageNumber`, `pageSize`, `sortColumn`, `sortDirection`, `searchTerm`, `asOfDate`
-
-#### Financial
-- `GET /api/financial/report` - Get financial report
-  - Query parameters: `shipCode`, `period` (YYYY-MM), `isSummary`
-- `GET /api/financial/report/summary` - Get summary report
-- `GET /api/financial/report/detail` - Get detailed report
-
-## 🐳 Docker Deployment
-
-The project includes Docker configuration for easy deployment:
-
-```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop all services
-docker-compose down
-
-# Stop and remove volumes (clean slate)
-docker-compose down -v
-```
-
-**Services:**
-- `sqlserver`: SQL Server 2022 database
-- `api`: .NET API application
-
-**Ports:**
-- API: http://localhost:5000
-- SQL Server: localhost:1433
+See Swagger UI for complete API documentation and testing interface.
 
 ## 🧪 Testing
 
@@ -285,63 +225,54 @@ dotnet test /p:CollectCoverage=true
 ## 📝 Sample Data
 
 The database includes comprehensive sample data:
-- 5 ships with different fiscal years and statuses
-- 5 users with various roles
-- 100+ crew members across ships
-- 18 crew ranks covering deck, engine, and catering departments
-- Hierarchical chart of accounts (50+ accounts)
-- 2 years of budget data (2024-2025)
-- Transaction data for multiple ships and periods
+- 5 ships (SHIP01-SHIP05) with different fiscal years
+- 100 crew members with realistic profiles
+- 5 users with ship assignments
+- 18 crew ranks (deck, engine, catering)
+- 68 chart of accounts with hierarchy
+- 2 years of budget and transaction data (2024-2025)
 
-## 🔐 Security Considerations
+See [DATABASE.md](DATABASE.md) for complete details.
 
-- Parameterized queries (via Dapper) prevent SQL injection
-- Stored procedures provide an additional security layer
-- CORS configuration for controlled API access
-- Input validation on all endpoints
-- Environment-based configuration for sensitive data
+## 🔐 Security & Best Practices
 
-## 📈 Future Enhancements
-
-- JWT authentication and authorization
-- Role-based access control (RBAC)
-- Audit logging for all operations
-- Real-time notifications
-- Bulk data import/export
-- Advanced reporting with charts
-- Mobile app support
-- Multi-tenancy support
+- **Stored Procedures Only**: All database access via stored procedures (SQL injection prevention)
+- **Parameterized Queries**: Using Dapper with parameter binding
+- **Input Validation**: DTO validation on all endpoints
+- **Clean Architecture**: Separation of concerns for maintainability
+- **Repository Pattern**: Abstraction of data access
 
 ## 👨‍💻 Development
 
-### Adding a New Feature
+### Running Tests
 
-1. Define entities in `ShipManagement.Core/Entities`
-2. Create DTOs in `ShipManagement.Core/DTOs`
-3. Define repository interface in `ShipManagement.Core/Interfaces`
-4. Implement repository in `ShipManagement.Infrastructure/Repositories`
-5. Create controller in `ShipManagement.API/Controllers`
-6. Write tests in `ShipManagement.Tests`
+```bash
+# Run all tests
+dotnet test
 
-### Code Style
+# With detailed output
+dotnet test --logger "console;verbosity=detailed"
+```
 
-- Follow C# coding conventions
-- Use meaningful variable and method names
-- Add XML comments for public APIs
-- Keep controllers thin, move logic to services/repositories
+### Adding New Features
 
-## 📄 License
+1. Define entity in `Core/Entities`
+2. Create DTOs in `Core/DTOs`
+3. Define interface in `Core/Interfaces`
+4. Implement repository in `Infrastructure/Repositories`
+5. Create controller in `API/Controllers`
+6. Write tests in `Tests`
 
-This project is created for the AE Backend Code Challenge.
+### Database Changes
 
-## 🙏 Acknowledgments
-
-- Anglo-Eastern for the code challenge specification
-- Microsoft for .NET and SQL Server
-- Community contributors to Dapper, Swagger, and other libraries used
+1. Update SQL scripts in `database/`
+2. Run migration scripts
+3. Update stored procedures if needed
+4. Test with sample data
 
 ---
 
-**Contact**: support@shipmanagement.com  
-**Documentation**: See Swagger UI when application is running  
-**Issues**: Please report any issues in the GitHub repository
+**Project Status**: ✅ Production Ready  
+**Build**: Passing (9/9 tests)  
+**Database**: Azure SQL Server  
+**API**: Running on port 5050

@@ -1,18 +1,28 @@
 using System;
 using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace QuickTest
 {
     class Program
     {
-        private const string ConnectionString = "Server=tcp:sqlshipmasys.database.windows.net,1433;Initial Catalog=ship;Persist Security Info=False;User ID=ship;Password=sys2026!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
-
         static async Task Main(string[] args)
         {
+            // Load configuration
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .Build();
+
+            var connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found in appsettings.json");
+
             Console.WriteLine("Checking database state...\n");
 
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
                 await connection.OpenAsync();
 

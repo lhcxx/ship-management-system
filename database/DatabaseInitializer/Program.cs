@@ -2,15 +2,24 @@ using System;
 using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace DatabaseInitializer
 {
     class Program
     {
-        private const string ConnectionString = "Server=tcp:sqlshipmasys.database.windows.net,1433;Initial Catalog=ship;Persist Security Info=False;User ID=ship;Password=sys2026!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
-
         static async Task Main(string[] args)
         {
+            // Load configuration
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .Build();
+
+            var connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found in appsettings.json");
+
             Console.WriteLine("==========================================");
             Console.WriteLine("Azure SQL Database Initialization");
             Console.WriteLine("==========================================");
@@ -20,7 +29,7 @@ namespace DatabaseInitializer
             {
                 // Test connection
                 Console.WriteLine("Testing connection to Azure SQL Server...");
-                using (var connection = new SqlConnection(ConnectionString))
+                using (var connection = new SqlConnection(connectionString))
                 {
                     await connection.OpenAsync();
                     Console.WriteLine("✓ Connection successful!");
@@ -44,7 +53,7 @@ namespace DatabaseInitializer
                     var (file, description) = scriptFiles[i];
                     Console.WriteLine($"Step {i + 1}/{scriptFiles.Length}: {description}...");
                     
-                    if (!await ExecuteSqlFile(file))
+                    if (!await ExecuteSqlFile(connectionString, file))
                     {
                         Console.WriteLine($"✗ Failed: {description}");
                         return;
@@ -60,7 +69,7 @@ namespace DatabaseInitializer
                 Console.WriteLine("==========================================");
                 Console.WriteLine();
 
-                await DisplayDatabaseSummary();
+                await DisplayDatabaseSummary(connectionString);
 
                 Console.WriteLine();
                 Console.WriteLine("You can now run the API with: dotnet run");
@@ -83,7 +92,7 @@ namespace DatabaseInitializer
             }
         }
 
-        static async Task<bool> ExecuteSqlFile(string filename)
+        static async Task<bool> ExecuteSqlFile(string connectionString, string filename)
         {
             try
             {
@@ -107,7 +116,7 @@ namespace DatabaseInitializer
                     System.Text.RegularExpressions.RegexOptions.IgnoreCase
                 );
 
-                using (var connection = new SqlConnection(ConnectionString))
+                using (var connection = new SqlConnection(connectionString))
                 {
                     await connection.OpenAsync();
 
@@ -178,7 +187,7 @@ namespace DatabaseInitializer
             }
         }
 
-        static async Task DisplayDatabaseSummary()
+        static async Task DisplayDatabaseSummary(string connectionString)
         {
             Console.WriteLine("Database Summary:");
             Console.WriteLine("------------------------------------------");
@@ -197,7 +206,7 @@ namespace DatabaseInitializer
             var tableNames = new[] { "Ships", "Users", "CrewMembers", "CrewRanks", 
                 "ChartOfAccounts", "BudgetData", "AccountTransactions" };
 
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
                 await connection.OpenAsync();
 
