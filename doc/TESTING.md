@@ -24,24 +24,28 @@ tests/
 # Mac/Linux
 ./test.sh
 
-# Windows
-test.bat
+# Windows PowerShell
+.\test.ps1
 ```
 
 ### Run Specific Test Types
 
 ```bash
 # Unit tests only
-./test.sh --unit-only
+./test.sh --unit-only      # Mac/Linux
+.\test.ps1 -UnitOnly       # Windows
 
 # E2E tests only
-./test.sh --e2e-only
+./test.sh --e2e-only       # Mac/Linux
+.\test.ps1 -E2eOnly        # Windows
 
 # With detailed output
-./test.sh --verbose
+./test.sh --verbose        # Mac/Linux
+.\test.ps1 -Verbose        # Windows
 
 # With code coverage
-./test.sh --coverage
+./test.sh --coverage       # Mac/Linux
+.\test.ps1 -Coverage       # Windows
 ```
 
 ## Test Types
@@ -118,12 +122,13 @@ dotnet test --filter "FullyQualifiedName~ShipManagementApiE2ETests"
 ```
 
 **Windows**:
-```cmd
-test.bat                   # All tests
-test.bat --unit-only       # Unit tests only
-test.bat --e2e-only        # E2E tests only
-test.bat --verbose         # Detailed output
-test.bat --coverage        # Generate coverage report
+```powershell
+.\test.ps1                 # All tests
+.\test.ps1 -UnitOnly       # Unit tests only
+.\test.ps1 -E2eOnly        # E2E tests only
+.\test.ps1 -Verbose        # Detailed output
+.\test.ps1 -Coverage       # Generate coverage report
+.\test.ps1 -Help           # Show help
 ```
 
 ## Code Coverage

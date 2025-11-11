@@ -1,6 +1,6 @@
 # Ship Management System
 
-A comprehensive backend solution for managing ships, crew, and financial reporting. This project is built using .NET 9, SQL Server, and follows clean architecture principles.
+A comprehensive backend solution for managing ships, crew, and financial reporting. This project is built using .NET 8, SQL Server, and follows clean architecture principles.
 
 ## 📋 Table of Contents
 
@@ -51,7 +51,7 @@ This Ship Management System implements a complete backend solution for maritime 
 
 ## 🛠 Tech Stack
 
-- **Framework**: .NET 9 (C#)
+- **Framework**: .NET 8 (C#)
 - **Database**: SQL Server (T-SQL)
 - **ORM**: Dapper (micro-ORM for stored procedure calls)
 - **API**: ASP.NET Core Web API
@@ -82,7 +82,8 @@ ship-management-system/
 │       └── DTOs/                        # Test DTOs
 ├── database/                             # Database scripts & tools
 │   ├── init-db.sh                       # Database initialization (Mac/Linux)
-│   ├── init-db.bat                      # Database initialization (Windows)
+│   ├── init-db.ps1                      # Database initialization (Windows PowerShell)
+│   ├── init-db.bat                      # Database initialization (Windows CMD, deprecated)
 │   ├── 00_CleanupData.sql               # Data cleanup script
 │   ├── 01_CreateTables.sql              # Table creation (9 tables)
 │   ├── 02_InsertSampleData.sql          # Sample data (ships, crew, users)
@@ -98,7 +99,7 @@ ship-management-system/
 │   ├── TESTING.md                       # Testing guide
 │   ├── QUICKSTART.md                    # Quick start guide
 │   └── API_BACKGROUND.md                # Background API management
-├── test.sh / test.bat                    # Test runner scripts
+├── test.sh / test.ps1                    # Test runner scripts
 ├── docker-compose.yml                    # Docker Compose configuration
 ├── Dockerfile                            # Docker image definition
 ├── .env.example                          # Environment variables template
@@ -109,7 +110,7 @@ ship-management-system/
 
 ### Prerequisites
 
-- .NET 9 SDK
+- .NET 8 SDK
 - SQL Server (Local, Azure, or Docker)
 - Docker (optional, for containerized deployment)
 
@@ -127,9 +128,9 @@ ship-management-system/
    cd database
    ./init-db.sh
    
-   # Windows
+   # Windows (PowerShell)
    cd database
-   init-db.bat
+   .\init-db.ps1
    ```
 
 3. **Update API connection string**
@@ -210,12 +211,15 @@ The project includes comprehensive unit and E2E tests.
 ```bash
 # Run all tests (unit + E2E)
 ./test.sh             # Mac/Linux
-test.bat              # Windows
+.\test.ps1            # Windows PowerShell
 
 # Run specific test types
 ./test.sh --unit-only    # Unit tests only (3 tests)
+.\test.ps1 -UnitOnly     # Windows: Unit tests only
 ./test.sh --e2e-only     # E2E tests only (9 tests)
+.\test.ps1 -E2eOnly      # Windows: E2E tests only
 ./test.sh --coverage     # With code coverage
+.\test.ps1 -Coverage     # Windows: With code coverage
 
 # Or use dotnet CLI
 dotnet test
@@ -223,12 +227,14 @@ dotnet test
 
 ### Test Coverage
 
-**Total: 12 tests - All passing ✅**
+**Total: 18 tests - All passing ✅**
 
-**Unit Tests (3)**
+**Unit Tests (9)**
 - Ship entity validation
 - Crew member entity validation  
 - Financial calculation logic
+- DTO validation tests
+- Financial report DTO tests
 
 **E2E Tests (9)**
 - ✅ GetAllShips - Retrieve all ships from API
@@ -239,11 +245,24 @@ dotnet test
 - ✅ GetFinancialSummaryReport - Summary financial report
 - ✅ GetFinancialDetailReport - Detailed financial report
 - ✅ GetCrewList_InvalidShipCode - Error handling for invalid ship
+- ✅ GetUsers - Retrieve all users
 - ✅ GetFinancialReport_InvalidPeriod - Error handling for invalid period
 
 See [doc/TESTING.md](doc/TESTING.md) for detailed testing guide.
 
 ## 🏗 Design Decisions
+
+### Framework Version
+- **Target Framework**: .NET 8.0 (net8.0)
+- **Reason**: Maximum compatibility with current LTS release
+- **SDK Requirement**: .NET 8.0 SDK or higher
+- **Package Versions**: All packages compatible with .NET 8.0
+  - Microsoft.AspNetCore.OpenApi: 8.0.11
+  - Swashbuckle.AspNetCore: 6.8.1
+  - Microsoft.AspNetCore.Mvc.Testing: 8.0.11
+  - Microsoft.Extensions.Configuration: 8.0.0
+
+> **Upgrade Path**: To upgrade to .NET 9.0, update all `<TargetFramework>net8.0</TargetFramework>` to `net9.0` in .csproj files and update package versions accordingly.
 
 ### Architecture
 - **Clean Architecture**: Separation of concerns with Core, Infrastructure, and API layers
@@ -364,6 +383,9 @@ dotnet test --logger "console;verbosity=detailed"
 ---
 
 **Project Status**: ✅ Production Ready  
-**Build**: Passing (9/9 tests)  
+**Framework**: .NET 8.0  
+**Build**: Passing (18/18 tests)  
 **Database**: Azure SQL Server  
 **API**: Running on port 5050
+
+> **Note**: This project is built on .NET 8.0 for maximum compatibility. All projects target `net8.0` framework.

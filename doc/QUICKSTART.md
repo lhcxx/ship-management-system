@@ -4,7 +4,7 @@
 
 ### Prerequisites
 
-- .NET 9 SDK
+- .NET 8 SDK
 - SQL Server (Azure SQL or Local SQL Server)
 - Optional: SQL Server Management Studio
 
@@ -21,8 +21,8 @@
    ```bash
    cd database
    
-   # Windows
-   init-db.bat
+   # Windows PowerShell
+   .\init-db.ps1
    
    # macOS/Linux
    chmod +x init-db.sh
@@ -212,7 +212,7 @@ dotnet build
 
 # Run all tests (unit + E2E)
 ./test.sh              # Mac/Linux
-test.bat               # Windows
+.\test.ps1             # Windows PowerShell
 
 # Run tests with dotnet CLI
 dotnet test
